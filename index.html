@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0e14" id="themeColorMeta">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self'; manifest-src 'self'; media-src 'none'; frame-src 'none'; child-src 'none';">
+<title>MarkNest</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="busy" class="status hidden" role="status" aria-live="polite">Saving…</div>
+<div id="loadErrorPanel" class="loadErrorPanel hidden" role="alert"><div><strong>Could not load your MarkNest</strong><p id="loadErrorText">Your MarkNest is stored locally in this browser.</p></div><button type="button" id="retryLoad" class="primary">Retry</button></div>
+<div id="app" class="app hidden">
+ <aside class="sidebar">
+  <div class="logo"><span class="logoMark">M</span> MarkNest</div>
+  <nav class="nav">
+   <button type="button" class="active" data-view="dashboard">⌂ <span>Overview</span></button>
+   <button type="button" data-view="bookmarks">🔖 <span>Bookmarks</span></button>
+   <button type="button" data-view="notes">▤ <span>Notes</span></button>
+  </nav>
+  <div class="sidebarBottom">
+   <div class="account" id="account">Local MarkNest</div>
+   <div class="familyTools" aria-label="Site families">
+    <div class="backupTitle">Site families</div>
+    <button type="button" id="manageFamilies" class="secondary fullWidth">Manage site families</button>
+<button type="button" id="manageCategories" class="secondary fullWidth">Manage categories</button>
+   </div>
+   <div class="backupTools" aria-label="Bookmark backup">
+    <div class="backupTitle">Bookmark backup</div>
+    <div class="backupRow">
+     <label class="backupFormat"><span>Export format</span><select id="bookmarkExportFormat" aria-label="Bookmark export format"><option value="json">JSON</option><option value="html">HTML (Chrome/Firefox)</option><option value="csv">CSV</option><option value="tsv">TSV</option><option value="txt">TXT</option><option value="md">Markdown</option></select></label>
+     <div class="backupRow"><button type="button" id="exportBookmarks" class="secondary" title="Export bookmarks">Export</button>
+     <button type="button" id="importBookmarks" class="secondary" title="Import bookmarks">Import</button></div>
+    </div>
+    <input id="bookmarkImportFile" aria-label="Import bookmark file" type="file" accept=".json,.html,.htm,.csv,.tsv,.txt,.md,text/html,text/csv,text/plain,text/markdown,application/json" hidden>
+   </div>
+
+  </div>
+ </aside>
+ <main class="main">
+  <header class="topbar">
+   <div class="mobileBrand"><span class="logoMark">M</span><span>MarkNest</span></div>
+   <div class="search"><span aria-hidden="true">⌕</span><input id="globalSearch" aria-label="Search your MarkNest" autocomplete="off" placeholder="Search your MarkNest..."></div>
+   <div class="topActions"><button type="button" class="iconBtn settingsTrigger" id="utilityToggle" aria-label="Open menu and settings" aria-haspopup="dialog" aria-expanded="false" aria-controls="utilityPanel" title="Menu and settings">⚙</button></div>
+  </header>
+   <div id="utilityPanel" class="utilityPanel hidden" role="dialog" aria-modal="true" aria-labelledby="utilityPanelTitle" aria-hidden="true">
+    <div class="utilityHead"><div><strong id="utilityPanelTitle">Menu &amp; Settings</strong><span class="utilitySub">Navigation, actions, appearance and shortcuts</span></div><button type="button" class="close utilityClose" id="closeUtility" aria-label="Close menu">×</button></div>
+    <div class="utilitySection">
+     <div class="utilityLabel">Navigate</div>
+     <div class="utilityGrid"><button type="button" class="utilityItem" data-view="dashboard"><span>⌂</span><b>Home</b></button><button type="button" class="utilityItem" data-view="bookmarks"><span>🔖</span><b>Bookmarks</b></button><button type="button" class="utilityItem" data-view="notes"><span>▤</span><b>Notes</b></button><button type="button" class="utilityItem" id="utilityFamilies"><span>⌘</span><b>Families</b></button></div>
+    </div>
+    <div class="utilitySection">
+     <div class="utilityLabel">Quick actions</div>
+     <div class="utilityList"><button type="button" class="utilityRow" id="utilityNewBookmark"><span>＋</span><span><b>New bookmark</b><small>Add a website to your MarkNest</small></span></button><button type="button" class="utilityRow" id="utilityNewNote"><span>✎</span><span><b>New note</b><small>Capture something useful</small></span></button><button type="button" class="utilityRow" id="utilityExport"><span>⇩</span><span><b>Export bookmarks</b><small>Back up your collection</small></span></button><button type="button" class="utilityRow" id="utilityImport"><span>⇧</span><span><b>Import bookmarks</b><small>Bring in a bookmark file</small></span></button><button type="button" class="utilityRow" id="utilityCategories"><span>▦</span><span><b>Manage categories</b><small>Create or organize categories</small></span></button></div>
+    </div>
+    <div class="utilitySection">
+     <div class="utilityLabel">Appearance</div>
+     <div class="utilityThemeHead"><span>Theme</span><span id="currentThemeName" class="utilityValue">Midnight</span></div>
+     <div id="themeGrid" class="themeGrid"></div>
+    </div>
+    <div class="utilitySection">
+     <div class="utilityLabel">Privacy &amp; logos</div>
+     <label class="utilityToggle"><span><b>Load site logos</b><small>Optional: loads favicons from bookmarked websites. This uses the internet and is off by default.</small></span><input type="checkbox" id="logoToggle"></label>
+    </div>
+    <div class="utilitySection">
+     <div class="utilityLabel">Keyboard shortcuts</div>
+     <label class="utilityToggle"><span><b>Enable shortcuts</b><small>Use PC keyboard shortcuts outside text fields</small></span><input type="checkbox" id="shortcutToggle" checked></label>
+     <div class="shortcutList"><div><kbd>/</kbd><span>Focus search</span></div><div><kbd>N</kbd><span>New bookmark</span></div><div><kbd>Shift</kbd><kbd>N</kbd><span>New note</span></div><div><kbd>Ctrl</kbd><kbd>A</kbd><span>Select visible bookmarks</span></div><div><kbd>Esc</kbd><span>Clear selection / close menu</span></div><div><kbd>Delete</kbd><span>Delete selected bookmarks</span></div></div>
+    </div>
+    <div class="utilityFooter"><div class="accountCompact" id="utilityAccount">Local MarkNest</div></div>
+   </div>
+  <div id="utilityBackdrop" class="utilityBackdrop hidden" aria-hidden="true"></div>
+  <div class="content">
+   <section id="dashboardView">
+    <div class="pageHead"><div><div class="eyebrow">Private workspace</div><h1>Your MarkNest</h1><p>A clean home for the things worth keeping.</p></div><button type="button" class="primary" id="dashAdd">＋ Add bookmark</button></div>
+    <div class="stats">
+     <div class="stat"><div class="statTop"><span>Bookmarks</span><span class="statIcon">🔖</span></div><div class="statNum" id="bookmarkCount">0</div></div>
+     <div class="stat"><div class="statTop"><span>Notes</span><span class="statIcon">▤</span></div><div class="statNum" id="noteCount">0</div></div>
+     <div class="stat"><div class="statTop"><span>Favorites</span><span class="statIcon">★</span></div><div class="statNum" id="favoriteCount">0</div></div>
+    </div>
+    <div class="sectionTitle"><h2>Recently added</h2><span>Latest items</span></div>
+    <div id="recent" class="grid"></div>
+   </section>
+
+   <section id="bookmarksView" class="hidden">
+    <div class="pageHead"><div><div class="eyebrow">Collection</div><h1>Bookmarks</h1><p>Keep useful corners of the internet one click away.</p></div><div class="pageHeadActions"><button type="button" class="secondary" id="toggleBookmarkSelection" aria-pressed="false">Select</button><button type="button" class="primary" id="addBookmark">＋ Add bookmark</button></div></div>
+    <div class="listToolbar"><input class="field" id="bookmarkSearch" autocomplete="off" aria-label="Search bookmarks" placeholder="Search bookmarks..."><select class="field" id="bookmarkCategory" aria-label="Filter bookmarks by category"><option value="">All categories</option></select><select class="field defaultCategory" id="defaultBookmarkCategory" aria-label="Default category for new bookmarks"><option value="">Default category: None</option></select></div>
+<div id="bookmarkBulkBar" class="bulkBar hidden" role="region" aria-label="Bulk bookmark actions">
+      <div class="bulkSelectionTools"><span id="selectedBookmarkCount" class="bulkCount">0 selected</span><span id="selectionHint" class="selectionHint">Tap items to select · Shift-click for a range</span><button type="button" id="selectAllBookmarks" class="secondary bulkButton">Select all</button><button type="button" id="invertBookmarkSelection" class="secondary bulkButton">Invert</button></div>
+      <div class="bulkActionGroup">
+       <select id="bulkBookmarkAction" class="field bulkActionSelect" aria-label="Bulk action">
+        <option value="">Choose action…</option>
+        <option value="move">Move to category</option>
+        <option value="export">Export selected</option>
+        <option value="favorite">Add to favorites</option>
+        <option value="unfavorite">Remove from favorites</option>
+        <option value="archive">Archive selected</option>
+        <option value="unarchive">Unarchive selected</option>
+        <option value="delete">Delete selected</option>
+       </select>
+       <span id="bulkBookmarkCategoryWrap" class="hidden"><select id="bulkBookmarkCategory" class="field" aria-label="Category for selected bookmarks"></select></span>
+       <button type="button" id="bulkApplyBookmarks" class="primary bulkButton" disabled>Apply</button>
+      </div>
+      <button type="button" id="clearBookmarkSelection" class="secondary bulkButton">Clear</button>
+     </div>
+    <div id="bookmarkGrid" class="grid"></div>
+   </section>
+
+   <section id="notesView" class="hidden">
+    <div class="pageHead"><div><div class="eyebrow">Knowledge</div><h1>Notes</h1><p>Short thoughts, useful details, and everything else.</p></div><button type="button" class="primary" id="addNote">＋ Add note</button></div>
+    <div class="listToolbar"><input class="field" id="noteSearch" autocomplete="off" aria-label="Search notes" placeholder="Search notes..."><select class="field" id="noteCategory" aria-label="Filter notes by category"><option value="">All categories</option></select></div>
+    <div id="noteGrid" class="grid"></div>
+   </section>
+  </div>
+ </main>
+</div>
+
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalHint">
+ <div class="modalBox">
+  <div class="modalHead"><div><h2 id="modalTitle">Add</h2><div id="modalHint" class="srOnly">Create or edit an item in your private MarkNest.</div></div><button type="button" class="close" id="close" aria-label="Close dialog">×</button></div>
+  <form id="form">
+   <input id="id" type="hidden"><input id="type" type="hidden">
+   <label for="title">Title</label><input class="field" id="title" maxlength="200" required>
+   <div id="urlField"><label for="url">Website URL</label><input class="field" id="url" type="text" inputmode="url" autocomplete="url" maxlength="2048" spellcheck="false" placeholder="example.com or https://example.com"></div>
+   <div id="descField"><label for="description">Description</label><textarea id="description" class="shortText" maxlength="1000"></textarea></div>
+   <div id="contentField"><label for="content">Note</label><textarea id="content" maxlength="20000" placeholder="Write your note..."></textarea></div>
+   <div class="row"><div><label for="category">Category</label><input class="field" id="category" maxlength="80" list="cats" placeholder="e.g. AI, Tools, Study"><datalist id="cats"></datalist><div id="categorySuggestion" class="fieldHint hidden"></div></div><div><label for="tags">Tags</label><input class="field" id="tags" maxlength="1800" placeholder="ai, tools, useful"></div></div>
+   <div id="familyField" class="familyField"><label for="siteFamily">Site family <span class="mutedLabel">(optional)</span></label><select class="field" id="siteFamily"><option value="">No site family</option></select><div id="familySuggestion" class="fieldHint hidden"></div></div>
+   <label class="check" id="favField"><input id="favorite" type="checkbox" aria-label="Add to favorites"> Add to favorites</label>
+   <label class="check" id="pinField"><input id="pinned" type="checkbox" aria-label="Pin this note"> Pin this note</label>
+   <div id="saveError" class="error hidden"></div>
+  </form>
+  <div class="modalActions">
+   <button type="button" class="secondary" id="cancel">Cancel</button>
+   <button type="submit" class="primary" id="saveButton" form="form">Save</button>
+  </div>
+ </div>
+</div>
+
+<div id="familyModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="familyModalTitle" aria-describedby="familyModalHint">
+ <div class="modalBox familyModalBox">
+  <div class="modalHead"><div><h2 id="familyModalTitle">Site families</h2><div id="familyModalHint" class="srOnly">Group a primary website domain with alternative domains.</div></div><button type="button" class="close" id="closeFamilyModal" aria-label="Close site families">×</button></div>
+  <div class="familyBody">
+   <div id="familyList" class="familyList"></div>
+   <div class="familyEditor">
+    <h3 id="familyEditorTitle">Add site family</h3>
+    <input id="familyId" type="hidden">
+    <label for="familyName">Family name</label><input id="familyName" class="field" maxlength="80" placeholder="Example">
+    <label for="familyPrimary">Primary domain</label><input id="familyPrimary" class="field" maxlength="255" placeholder="example.com" inputmode="url" autocapitalize="none" spellcheck="false">
+    <label for="familyAliases">Alternative domains</label><textarea id="familyAliases" class="shortText" maxlength="2000" placeholder="docs.example.com
+app.example.com
+example.org"></textarea>
+    <div id="familyError" class="error hidden"></div>
+    <div class="modalActions"><button type="button" class="secondary" id="cancelFamilyEdit">Clear</button><button type="button" class="primary" id="saveFamily">Save family</button></div>
+   </div>
+  </div>
+ </div>
+</div>
+<script src="app.js" defer></script>
+
+<div id="categoryModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle" aria-describedby="categoryModalHint">
+ <div class="modalBox categoryManager">
+  <div class="modalHead"><div><h2 id="categoryModalTitle">Manage categories</h2><p id="categoryModalHint">Delete one or several categories. Bookmarks are kept and become uncategorized.</p></div><button type="button" class="iconBtn" id="closeCategoryModal" aria-label="Close category manager">✕</button></div>
+  <div class="categoryCreate"><label for="newCategoryName">New category</label><div class="categoryCreateRow"><input id="newCategoryName" class="field" maxlength="80" placeholder="Category name"><button type="button" id="createCategory" class="primary">Add</button></div><div id="categoryCreateError" class="error hidden"></div></div>
+  <div class="bulkBar"><label class="bulkSelect"><input id="selectAllCategories" type="checkbox" aria-label="Select all categories"> <span>Select all</span></label><span id="selectedCategoryCount" class="bulkCount">0 selected</span><button type="button" id="bulkDeleteCategories" class="danger bulkButton" disabled>Delete selected</button></div>
+  <div id="categoryList" class="categoryList"></div>
+ </div>
+</div>
+<div id="importCategoryModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="importCategoryTitle" aria-describedby="importCategoryHint">
+ <div class="modalBox importCategoryBox">
+  <div class="modalHead"><div><h2 id="importCategoryTitle">Import bookmarks</h2><div id="importCategoryHint" class="srOnly">Choose how bookmarks without a category in the imported file should be handled.</div></div><button type="button" class="close" id="closeImportCategory" aria-label="Close import dialog">×</button></div>
+  <div class="importCategoryBody">
+   <div id="importSummary" class="importSummary"></div>
+   <label class="importOption"><input type="radio" name="importCategoryMode" value="file" checked aria-label="Use categories from the file"><span><strong>Use categories from the file</strong><small>Categories found in the file are created or reused automatically.</small></span></label>
+   <label class="importOption"><input type="radio" name="importCategoryMode" value="fallback" aria-label="Use an existing category for uncategorized bookmarks"><span><strong>Use an existing category for uncategorized bookmarks</strong><small>Bookmarks with no category in the file will be added to the category you choose.</small></span></label>
+   <label id="importFallbackWrap" class="backupFormat hidden"><span>Existing category</span><select id="importFallbackCategory" aria-label="Existing category for uncategorized imported bookmarks"></select></label>
+   <div class="importDuplicateBox">
+    <strong>Duplicate handling</strong>
+    <label class="importCheck"><input id="importSkipDuplicates" type="checkbox" checked aria-label="Skip bookmarks that already exist"><span>Skip bookmarks that already exist</span></label>
+    <small id="importDuplicateSummary" class="mutedLabel"></small>
+   </div>
+  </div>
+  <div class="modalActions"><button type="button" class="secondary" id="cancelImportCategory">Cancel</button><button type="button" class="primary" id="confirmImportCategory">Import bookmarks</button></div>
+ </div>
+</div>
+
+</body>
+</html>

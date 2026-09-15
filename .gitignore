@@ -1,0 +1,19 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local development artifacts
+*.log
+*.tmp
+*.bak
+
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+
+# Python cache (if local tooling is used)
+__pycache__/
+*.py[cod]
